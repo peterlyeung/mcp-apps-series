@@ -67,26 +67,26 @@ sequenceDiagram
     participant User
     participant Host as Claude Desktop
     participant Server as server.py
-    participant App as Iframe (UI_HTML)
+    participant App as MCP App iframe
 
     User->>Host: "roll a d20"
-    Host->>Server: tools/call roll_dice {sides: 20}
-    Server-->>Host: content + structuredContent {sides:20, value:19}
-    Note over Host: tool definition said this tool has a ui:// resource
-    Host->>Server: resources/read ui://dice-server/roller
-    Server-->>Host: HTML/JS page (text/html;profile=mcp-app)
-    Host->>App: render HTML in sandboxed iframe
-    App->>Host: ui/initialize (postMessage)
-    Host-->>App: hostInfo, hostContext (theme, size...)
-    App->>Host: ui/notifications/initialized
-    Host-->>App: ui/notifications/tool-result {structuredContent}
-    Note over App: renders "19 / rolled a 19 (d20)"
+    Host->>Server: "tools/call roll_dice, sides=20"
+    Server-->>Host: "content + structuredContent, sides=20 value=19"
+    Note over Host: tool definition said this tool has a ui resource
+    Host->>Server: "resources/read ui dice-server roller"
+    Server-->>Host: "HTML/JS page, mimeType text/html mcp-app profile"
+    Host->>App: "render HTML in sandboxed iframe"
+    App->>Host: "ui/initialize, sent over postMessage"
+    Host-->>App: "hostInfo, hostContext - theme, size"
+    App->>Host: "ui/notifications/initialized"
+    Host-->>App: "ui/notifications/tool-result, structuredContent"
+    Note over App: renders 19, rolled a 19 on a d20
 
-    User->>App: clicks "Roll Again"
-    App->>Host: tools/call roll_dice {sides:20}  (request, own id)
-    Host->>Server: tools/call roll_dice {sides:20}
-    Server-->>Host: content + structuredContent {value: new roll}
-    Host-->>App: response matched by id
+    User->>App: clicks Roll Again
+    App->>Host: "tools/call roll_dice, sides=20 - own request id"
+    Host->>Server: "tools/call roll_dice, sides=20"
+    Server-->>Host: "content + structuredContent, new value"
+    Host-->>App: "response matched by request id"
     Note over App: re-renders with new value, no model round trip
 ```
 
