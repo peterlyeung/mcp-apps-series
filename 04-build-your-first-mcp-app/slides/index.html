@@ -8,12 +8,20 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css">
 <style>
   :root { --accent: #d97757; }
-  .reveal h1, .reveal h2 { color: var(--accent); }
+  .reveal h1, .reveal h2 { color: var(--accent); overflow-wrap: break-word; }
+  .reveal h1 { font-size: 1.8em; }
+  .reveal h2 { font-size: 1.5em; }
   .reveal .slides { text-align: left; }
+  .reveal .slides section { width: 92%; margin: 0 auto; }
+  .reveal p, .reveal li { overflow-wrap: break-word; }
   .reveal h1, .reveal h2, .reveal .center-title { text-align: center; }
   .reveal table { font-size: 0.6em; }
   .reveal table th { color: var(--accent); }
   .reveal .mermaid { text-align: center; }
+  .reveal .mermaid svg { max-height: 480px; width: auto; height: auto; }
+  .reveal .slides section .mermaid { margin-bottom: 0.2em; }
+  .reveal ul.compact { font-size: 0.75em; }
+  .reveal ul.compact li { margin-bottom: 0.15em; }
   .reveal .small { font-size: 0.55em; }
   .reveal code { color: #ffd7c2; }
   .reveal ul li { margin-bottom: 0.3em; }
@@ -22,6 +30,23 @@
     background: var(--accent); color: #1a1a1a; font-size: 0.4em;
     vertical-align: middle; margin-left: 10px;
   }
+  /* Hand-built box-and-line diagrams (used instead of Mermaid flowcharts,
+     which clip label text unpredictably in this rendering environment). */
+  .diagram-row {
+    display: flex; justify-content: center; gap: 80px; margin-top: 30px;
+  }
+  .diagram-col { display: flex; flex-direction: column; align-items: center; }
+  .diagram-col .box {
+    border: 1px solid #ccc; border-radius: 4px; background: #1f2020;
+    color: #eee; padding: 14px 22px; font-size: 22px; text-align: center;
+    min-width: 200px;
+  }
+  .diagram-col .line { width: 2px; height: 36px; background: #888; }
+  .diagram-col .edge-label {
+    background: rgba(120, 120, 120, 0.5); color: #eee; font-size: 17px;
+    padding: 3px 10px; border-radius: 3px; white-space: nowrap;
+  }
+  .diagram-col .caption { margin-top: 14px; font-size: 16px; color: #999; }
 </style>
 </head>
 <body>
@@ -49,18 +74,23 @@
     <p>Before we look at our demo, one thing worth being clear on: our dice
        server runs <strong>on your laptop</strong>. That's one option, not
        the only one.</p>
-    <div class="mermaid">
-flowchart LR
-    subgraph Local["Local transport"]
-        HD1["Claude Desktop"]
-        S1["MCP server\non your machine"]
-        HD1 <-- "spawns as a subprocess\nstdin/stdout JSON-RPC" --> S1
-    end
-    subgraph Remote["Remote transport"]
-        HD2["Claude Desktop\nor claude.ai"]
-        S2["MCP server\non someone else's infrastructure"]
-        HD2 <-- "network call over HTTPS\nStreamable HTTP + OAuth" --> S2
-    end
+    <div class="diagram-row">
+      <div class="diagram-col">
+        <div class="box">Claude Desktop</div>
+        <div class="line"></div>
+        <div class="edge-label">stdio</div>
+        <div class="line"></div>
+        <div class="box">MCP server<br>on your machine</div>
+        <div class="caption">Local transport</div>
+      </div>
+      <div class="diagram-col">
+        <div class="box">Claude Desktop</div>
+        <div class="line"></div>
+        <div class="edge-label">HTTPS + OAuth</div>
+        <div class="line"></div>
+        <div class="box">MCP server<br>in the cloud</div>
+        <div class="caption">Remote transport</div>
+      </div>
     </div>
     <aside class="notes">
       MCP actually supports two transports. Stdio is local: Claude Desktop
@@ -81,21 +111,23 @@ flowchart LR
   <!-- Slide 3: our demo is local -->
   <section>
     <h2>Our demo: the local path <span class="tag">what we built</span></h2>
-    <div class="mermaid">
-flowchart LR
-    subgraph HostBox["Claude Desktop, the host"]
-        UI[Chat UI]
-        Client[MCP client]
-        Iframe["Sandboxed iframe\nrenders the ui resource"]
-    end
-    subgraph ChildBox["Child process"]
-        Server["server.py\ndice-server"]
-    end
-
-    UI <--> Client
-    Client <-- "stdin/stdout\nJSON-RPC, newline-delimited" --> Server
-    Client -. "renders HTML into" .-> Iframe
-    Iframe <-- "postMessage\nJSON-RPC dialect" --> Client
+    <div class="diagram-row">
+      <div class="diagram-col">
+        <div class="box">Claude Desktop</div>
+        <div class="line"></div>
+        <div class="edge-label">stdio</div>
+        <div class="line"></div>
+        <div class="box">server.py</div>
+        <div class="caption">Channel 1: MCP client &lt;-&gt; server</div>
+      </div>
+      <div class="diagram-col">
+        <div class="box">Claude Desktop</div>
+        <div class="line"></div>
+        <div class="edge-label">postMessage</div>
+        <div class="line"></div>
+        <div class="box">Sandboxed iframe</div>
+        <div class="caption">Channel 2: host &lt;-&gt; rendered UI</div>
+      </div>
     </div>
     <p class="small">Two separate channels: Claude Desktop &lt;-&gt; server.py over stdio,
        and Claude Desktop &lt;-&gt; iframe over postMessage. The iframe never talks
@@ -127,9 +159,8 @@ flowchart LR
         <tr><td><code>resources/read</code></td><td>the full HTML/JS page for the UI</td></tr>
       </tbody>
     </table>
-    <p class="small">The <code>_meta.ui.resourceUri</code> field and the <code>mcp-app</code> mime type
-       are the two signals that tell Claude Desktop "render this as a UI," not
-       just text.</p>
+    <p class="small"><code>_meta.ui.resourceUri</code> and the <code>mcp-app</code> mime type
+       are what tell Claude Desktop to render a UI, not just text.</p>
     <aside class="notes">
       Five request types, five response shapes. The two that matter most:
       when the host asks for the tool list, our roll_dice tool includes a
@@ -143,26 +174,26 @@ flowchart LR
 
   <!-- Slide 5: sequence diagram -->
   <section>
-    <h2>How it renders: tool call to clickable card</h2>
-    <div class="mermaid small">
+    <h2>From tool call to clickable card</h2>
+    <div class="mermaid">
 sequenceDiagram
     participant User
     participant Host as Claude Desktop
     participant Server as server.py
-    participant App as MCP App iframe
+    participant App as iframe
 
-    User->>Host: "roll a d20"
-    Host->>Server: "tools/call roll_dice, sides=20"
-    Server-->>Host: "content + structuredContent, sides=20 value=19"
-    Note over Host: tool definition said this tool has a ui resource
-    Host->>Server: "resources/read ui dice-server roller"
-    Server-->>Host: "HTML/JS page, mimeType text/html mcp-app profile"
-    Host->>App: "render HTML in sandboxed iframe"
-    App->>Host: "ui/initialize, sent over postMessage"
-    Host-->>App: "hostInfo, hostContext - theme, size"
-    App->>Host: "ui/notifications/initialized"
-    Host-->>App: "ui/notifications/tool-result, structuredContent"
-    Note over App: renders 19, rolled a 19 on a d20
+    User->>Host: roll a d20
+    Host->>Server: tools/call roll_dice
+    Server-->>Host: value = 19
+    Note over Host: tool declares a UI
+    Host->>Server: resources/read
+    Server-->>Host: HTML page
+    Host->>App: render in iframe
+    App->>Host: ui/initialize
+    Host-->>App: hostContext
+    App->>Host: initialized
+    Host-->>App: tool-result: 19
+    Note over App: shows "19"
     </div>
     <aside class="notes">
       Here's the full lifecycle. The model decides to call roll_dice. The
@@ -181,23 +212,23 @@ sequenceDiagram
   <!-- Slide 6: app-initiated round trip -->
   <section>
     <h2>The part that makes it interactive</h2>
-    <div class="mermaid small">
+    <div class="mermaid">
 sequenceDiagram
     participant User
     participant Host as Claude Desktop
     participant Server as server.py
-    participant App as MCP App iframe
+    participant App as iframe
 
     User->>App: clicks Roll Again
-    App->>Host: "tools/call roll_dice, sides=20 - own request id"
-    Host->>Server: "tools/call roll_dice, sides=20"
-    Server-->>Host: "content + structuredContent, new value"
-    Host-->>App: "response matched by request id"
-    Note over App: re-renders with new value, no model round trip
+    App->>Host: tools/call roll_dice
+    Host->>Server: tools/call roll_dice
+    Server-->>Host: new value
+    Host-->>App: matched response
+    Note over App: re-renders, no model involved
     </div>
-    <ul>
-      <li>The <strong>first</strong> roll is model-initiated — pushed to the app as a notification.</li>
-      <li><strong>"Roll Again"</strong> is app-initiated — the iframe sends its own <code>tools/call</code> request.</li>
+    <ul class="compact">
+      <li>The <strong>first</strong> roll is model-initiated — pushed as a notification.</li>
+      <li><strong>"Roll Again"</strong> is app-initiated — the iframe sends its own <code>tools/call</code>.</li>
       <li>The model is not involved in the second leg at all.</li>
     </ul>
     <aside class="notes">
@@ -215,10 +246,10 @@ sequenceDiagram
   <section>
     <h2>Recap</h2>
     <ul>
-      <li>MCP servers can be <strong>local</strong> (stdio, a subprocess) or <strong>remote</strong> (Streamable HTTP, a Custom Connector) — MCP Apps rendering works the same either way.</li>
-      <li>A tool opts into a UI via <code>_meta.ui.resourceUri</code>; the resource is served with mime type <code>text/html;profile=mcp-app</code>.</li>
-      <li>The UI renders in a <strong>sandboxed iframe</strong> that only talks to the host, never the server directly.</li>
-      <li>Two distinct round trips: <strong>model-initiated</strong> (pushed as a notification) and <strong>app-initiated</strong> (the UI calling tools on its own).</li>
+      <li>MCP servers can be <strong>local</strong> (stdio) or <strong>remote</strong> (Streamable HTTP) — MCP Apps rendering works the same either way.</li>
+      <li>A tool opts into a UI via <code>_meta.ui.resourceUri</code>, served with mime type <code>mcp-app</code>.</li>
+      <li>The UI renders in a <strong>sandboxed iframe</strong> that only talks to the host, never the server.</li>
+      <li>Two round trips: <strong>model-initiated</strong> (pushed as a notification) and <strong>app-initiated</strong> (the UI calling tools itself).</li>
     </ul>
     <p class="small">Full write-up + working code: github.com/peterlyeung/mcp-apps-series</p>
     <aside class="notes">
@@ -238,8 +269,13 @@ sequenceDiagram
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
 <script type="module">
-  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.js";
-  mermaid.initialize({ startOnLoad: false, theme: "dark" });
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: "dark",
+    flowchart: { padding: 20 },
+    sequence: { messageMargin: 24, boxMargin: 8, actorMargin: 50, mirrorActors: false },
+  });
 
   const deck = new Reveal({
     plugins: [ RevealNotes ],
@@ -248,12 +284,18 @@ sequenceDiagram
     height: 720,
   });
 
-  deck.initialize().then(() => {
-    mermaid.run({ querySelector: ".mermaid" });
-  });
-  deck.on("slidechanged", () => {
-    mermaid.run({ querySelector: ".mermaid" });
-  });
+  // Reveal sets display:none on every slide except the current one, and
+  // Mermaid mis-measures (and permanently marks as "processed") any diagram
+  // it renders while hidden. So only ever render the diagram(s) on the
+  // slide that is actually visible right now, at the moment it becomes visible.
+  function renderVisibleDiagrams() {
+    mermaid.run({ querySelector: ".present .mermaid" });
+  }
+
+  deck.initialize()
+    .then(() => document.fonts.ready)
+    .then(renderVisibleDiagrams);
+  deck.on("slidechanged", renderVisibleDiagrams);
 </script>
 </body>
 </html>

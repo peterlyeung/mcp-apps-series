@@ -3,3 +3,8 @@ __pycache__/
 *.pyc
 node_modules/
 .env
+.venv/
+tools/render/models/
+tools/render/*.wav
+tools/render/*.png
+tools/render/output/
