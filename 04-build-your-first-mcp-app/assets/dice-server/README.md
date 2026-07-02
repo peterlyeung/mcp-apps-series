@@ -112,3 +112,42 @@ which the host inspects and mediates — same trust model as a normal tool
 call. `server.py` never receives a raw message from the iframe; it only ever
 receives `tools/call` requests forwarded (and implicitly authorized) by
 Claude Desktop.
+
+## 5. Important: this demo is local — MCP servers don't have to be
+
+Everything above uses the **stdio transport**: Claude Desktop spawns
+`server.py` as a child process on your machine and talks to it over
+stdin/stdout. That's one of *two* transports MCP supports, and it's easy to
+walk away from a demo like this thinking "MCP server" always means "a script
+running on my laptop." It doesn't.
+
+The other transport is **Streamable HTTP**, used by **remote MCP servers** —
+servers running on someone else's infrastructure (a company's cloud, a SaaS
+product, etc.) that Claude Desktop or claude.ai talks to over the network
+instead of spawning a process. Remote servers are added as **Custom
+Connectors** in Settings, not through `claude_desktop_config.json`, and
+typically authenticate with OAuth instead of just running with your local
+user's permissions.
+
+```mermaid
+flowchart LR
+    subgraph Local["Local transport - what this demo does"]
+        HD1["Claude Desktop"]
+        S1["server.py\nrunning on your machine"]
+        HD1 <-- "spawns as a subprocess\nstdin/stdout JSON-RPC" --> S1
+    end
+    subgraph Remote["Remote transport - equally valid MCP"]
+        HD2["Claude Desktop or claude.ai"]
+        S2["MCP server\nrunning on someone else's infrastructure"]
+        HD2 <-- "network call over HTTPS\nStreamable HTTP + OAuth" --> S2
+    end
+```
+
+Everything else in this README — the tool declaring `_meta.ui.resourceUri`,
+the `ui://` resource with `mimeType: text/html;profile=mcp-app`, the
+sandboxed iframe, the `ui/initialize` handshake, the app-initiated
+`tools/call` round trip — is **identical either way**. MCP Apps rendering
+doesn't care whether the tool call that produced the data came from a
+process on your laptop or an API call across the internet; the host mediates
+both the same way. Local vs. remote is purely about *how Claude Desktop
+reaches the server*, not about how the UI gets rendered.

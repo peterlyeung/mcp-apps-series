@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MCP Apps in Claude Desktop — Episode 04</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css">
+<style>
+  :root { --accent: #d97757; }
+  .reveal h1, .reveal h2 { color: var(--accent); }
+  .reveal .slides { text-align: left; }
+  .reveal h1, .reveal h2, .reveal .center-title { text-align: center; }
+  .reveal table { font-size: 0.6em; }
+  .reveal table th { color: var(--accent); }
+  .reveal .mermaid { text-align: center; }
+  .reveal .small { font-size: 0.55em; }
+  .reveal code { color: #ffd7c2; }
+  .reveal ul li { margin-bottom: 0.3em; }
+  .tag {
+    display: inline-block; padding: 2px 10px; border-radius: 12px;
+    background: var(--accent); color: #1a1a1a; font-size: 0.4em;
+    vertical-align: middle; margin-left: 10px;
+  }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+  <!-- Slide 1 -->
+  <section>
+    <h1 class="center-title">MCP Apps in Claude Desktop</h1>
+    <p class="center-title">How the connection, the response, and the render actually work</p>
+    <p class="center-title small">Episode 04 — mcp-apps-series</p>
+    <aside class="notes">
+      In the last episode we built a working MCP App from scratch — a dice
+      roller that renders as an interactive card inside Claude Desktop. In
+      this episode, we're going to slow down and look at exactly what's
+      happening under the hood: how Claude Desktop finds and talks to the
+      server, what comes back over the wire, and how that turns into a
+      clickable UI in the chat.
+    </aside>
+  </section>
+
+  <!-- Slide 2: local vs remote -->
+  <section>
+    <h2>An MCP server can live in two places</h2>
+    <p>Before we look at our demo, one thing worth being clear on: our dice
+       server runs <strong>on your laptop</strong>. That's one option, not
+       the only one.</p>
+    <div class="mermaid">
+flowchart LR
+    subgraph Local["Local transport"]
+        HD1["Claude Desktop"]
+        S1["MCP server\non your machine"]
+        HD1 <-- "spawns as a subprocess\nstdin/stdout JSON-RPC" --> S1
+    end
+    subgraph Remote["Remote transport"]
+        HD2["Claude Desktop\nor claude.ai"]
+        S2["MCP server\non someone else's infrastructure"]
+        HD2 <-- "network call over HTTPS\nStreamable HTTP + OAuth" --> S2
+    end
+    </div>
+    <aside class="notes">
+      MCP actually supports two transports. Stdio is local: Claude Desktop
+      launches the server as a child process on your machine and talks to it
+      over standard input and output. That's what we built. But there's also
+      Streamable HTTP: a remote MCP server running on someone else's
+      infrastructure — a company's cloud, a SaaS product — that Claude
+      Desktop talks to over the network instead, usually authenticating with
+      OAuth. In Claude Desktop, local servers go in the config file; remote
+      ones get added as Custom Connectors in Settings. Everything we're
+      about to walk through — the tool declaring a UI resource, the
+      sandboxed iframe, the handshake — works identically either way. Local
+      versus remote is only about how Claude Desktop reaches the server, not
+      about how the UI renders.
+    </aside>
+  </section>
+
+  <!-- Slide 3: our demo is local -->
+  <section>
+    <h2>Our demo: the local path <span class="tag">what we built</span></h2>
+    <div class="mermaid">
+flowchart LR
+    subgraph HostBox["Claude Desktop, the host"]
+        UI[Chat UI]
+        Client[MCP client]
+        Iframe["Sandboxed iframe\nrenders the ui resource"]
+    end
+    subgraph ChildBox["Child process"]
+        Server["server.py\ndice-server"]
+    end
+
+    UI <--> Client
+    Client <-- "stdin/stdout\nJSON-RPC, newline-delimited" --> Server
+    Client -. "renders HTML into" .-> Iframe
+    Iframe <-- "postMessage\nJSON-RPC dialect" --> Client
+    </div>
+    <p class="small">Two separate channels: Claude Desktop &lt;-&gt; server.py over stdio,
+       and Claude Desktop &lt;-&gt; iframe over postMessage. The iframe never talks
+       to server.py directly.</p>
+    <aside class="notes">
+      Claude Desktop doesn't connect to our server over a network — it
+      launches server.py as a child process and talks to it over stdin and
+      stdout. Every message in both directions is one line of JSON-RPC. And
+      notice there are two separate channels here: Claude Desktop to
+      server-dot-py over stdio, and Claude Desktop to the sandboxed iframe
+      over postMessage. The iframe never talks to our Python server
+      directly — the host always sits in the middle and mediates everything.
+      That's the security boundary.
+    </aside>
+  </section>
+
+  <!-- Slide 4: what it responds with -->
+  <section>
+    <h2>What the server responds with</h2>
+    <table>
+      <thead>
+        <tr><th>Client sends</th><th>Server responds with</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>initialize</code></td><td>protocolVersion, capabilities, serverInfo</td></tr>
+        <tr><td><code>tools/list</code></td><td><code>roll_dice</code> tool, with <code>_meta.ui.resourceUri</code></td></tr>
+        <tr><td><code>tools/call</code></td><td>text content + <code>structuredContent</code> (the real data)</td></tr>
+        <tr><td><code>resources/list</code></td><td>one resource, <code>mimeType: text/html;profile=mcp-app</code></td></tr>
+        <tr><td><code>resources/read</code></td><td>the full HTML/JS page for the UI</td></tr>
+      </tbody>
+    </table>
+    <p class="small">The <code>_meta.ui.resourceUri</code> field and the <code>mcp-app</code> mime type
+       are the two signals that tell Claude Desktop "render this as a UI," not
+       just text.</p>
+    <aside class="notes">
+      Five request types, five response shapes. The two that matter most:
+      when the host asks for the tool list, our roll_dice tool includes a
+      meta dot ui dot resourceUri field — that's the line that says "this
+      tool has a UI, go fetch it." And when the host reads that resource, it
+      comes back with a mime type of text-html profile mcp-app. Those two
+      signals together are what tell Claude Desktop to render this as an
+      interactive card instead of just printing text.
+    </aside>
+  </section>
+
+  <!-- Slide 5: sequence diagram -->
+  <section>
+    <h2>How it renders: tool call to clickable card</h2>
+    <div class="mermaid small">
+sequenceDiagram
+    participant User
+    participant Host as Claude Desktop
+    participant Server as server.py
+    participant App as MCP App iframe
+
+    User->>Host: "roll a d20"
+    Host->>Server: "tools/call roll_dice, sides=20"
+    Server-->>Host: "content + structuredContent, sides=20 value=19"
+    Note over Host: tool definition said this tool has a ui resource
+    Host->>Server: "resources/read ui dice-server roller"
+    Server-->>Host: "HTML/JS page, mimeType text/html mcp-app profile"
+    Host->>App: "render HTML in sandboxed iframe"
+    App->>Host: "ui/initialize, sent over postMessage"
+    Host-->>App: "hostInfo, hostContext - theme, size"
+    App->>Host: "ui/notifications/initialized"
+    Host-->>App: "ui/notifications/tool-result, structuredContent"
+    Note over App: renders 19, rolled a 19 on a d20
+    </div>
+    <aside class="notes">
+      Here's the full lifecycle. The model decides to call roll_dice. The
+      server responds with structured content. The host notices the tool
+      declared a UI resource, fetches it, and renders it in a sandboxed
+      iframe. The iframe then initializes itself by sending a ui-initialize
+      message to the host over postMessage, the host responds with context
+      like the current theme, the iframe confirms it's ready, and then the
+      host pushes the actual roll result into the iframe as a notification.
+      Notice the app didn't ask for that result — the host just delivered
+      it, because it already knew this was the tool call that triggered the
+      render.
+    </aside>
+  </section>
+
+  <!-- Slide 6: app-initiated round trip -->
+  <section>
+    <h2>The part that makes it interactive</h2>
+    <div class="mermaid small">
+sequenceDiagram
+    participant User
+    participant Host as Claude Desktop
+    participant Server as server.py
+    participant App as MCP App iframe
+
+    User->>App: clicks Roll Again
+    App->>Host: "tools/call roll_dice, sides=20 - own request id"
+    Host->>Server: "tools/call roll_dice, sides=20"
+    Server-->>Host: "content + structuredContent, new value"
+    Host-->>App: "response matched by request id"
+    Note over App: re-renders with new value, no model round trip
+    </div>
+    <ul>
+      <li>The <strong>first</strong> roll is model-initiated — pushed to the app as a notification.</li>
+      <li><strong>"Roll Again"</strong> is app-initiated — the iframe sends its own <code>tools/call</code> request.</li>
+      <li>The model is not involved in the second leg at all.</li>
+    </ul>
+    <aside class="notes">
+      This is the half of the story that's easy to miss. Clicking Roll Again
+      doesn't go back to the model at all. The iframe itself sends a
+      tools-call request, with its own request id, straight to the host. The
+      host forwards it to server-dot-py, gets a fresh roll, and routes the
+      response back to the iframe by matching that id. That's what turns
+      this from a one-shot snapshot into an actual interactive app — the UI
+      can keep calling tools on its own.
+    </aside>
+  </section>
+
+  <!-- Slide 7: recap -->
+  <section>
+    <h2>Recap</h2>
+    <ul>
+      <li>MCP servers can be <strong>local</strong> (stdio, a subprocess) or <strong>remote</strong> (Streamable HTTP, a Custom Connector) — MCP Apps rendering works the same either way.</li>
+      <li>A tool opts into a UI via <code>_meta.ui.resourceUri</code>; the resource is served with mime type <code>text/html;profile=mcp-app</code>.</li>
+      <li>The UI renders in a <strong>sandboxed iframe</strong> that only talks to the host, never the server directly.</li>
+      <li>Two distinct round trips: <strong>model-initiated</strong> (pushed as a notification) and <strong>app-initiated</strong> (the UI calling tools on its own).</li>
+    </ul>
+    <p class="small">Full write-up + working code: github.com/peterlyeung/mcp-apps-series</p>
+    <aside class="notes">
+      So to recap: local versus remote is just about how Claude Desktop
+      reaches the server. What actually makes an MCP App work is a tool
+      declaring a UI resource, that resource rendering in a sandboxed
+      iframe, and two kinds of tool calls — one pushed by the host when the
+      model calls the tool, and one the app can trigger itself. That's the
+      whole mental model. Next episode, we'll tour some of the official
+      example servers to see this pattern applied to real use cases.
+    </aside>
+  </section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.js";
+  mermaid.initialize({ startOnLoad: false, theme: "dark" });
+
+  const deck = new Reveal({
+    plugins: [ RevealNotes ],
+    hash: true,
+    width: 1280,
+    height: 720,
+  });
+
+  deck.initialize().then(() => {
+    mermaid.run({ querySelector: ".mermaid" });
+  });
+  deck.on("slidechanged", () => {
+    mermaid.run({ querySelector: ".mermaid" });
+  });
+</script>
+</body>
+</html>
