@@ -10,3 +10,5 @@ tools/render/*.png
 tools/render/output/
 tools/remotion-video/out/
 tools/remotion-video/public/audio/
+tools/youtube/client_secret.json
+tools/youtube/token.json
