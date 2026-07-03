@@ -1,0 +1,149 @@
+{
+  "id": "Episode02",
+  "title": "MCP Apps Deep Dive",
+  "slides": [
+    {
+      "type": "title",
+      "title": "MCP Apps Deep Dive",
+      "subtitle": "Protocol, lifecycle, and the security model",
+      "eyebrow": "Episode 02 \u2014 mcp-apps-series",
+      "narration": "Now the part most people skip past: how MCP Apps actually works under the hood. The protocol messages, the exact lifecycle from tool call to rendered UI, and the security model that makes it safe for a host to render code from a server it doesn't fully trust.",
+      "audioFile": "audio/Episode02/slide-01.wav",
+      "durationInFrames": 518
+    },
+    {
+      "type": "twoColumn",
+      "heading": "The core pattern: two primitives combined",
+      "columns": [
+        {
+          "title": "A tool",
+          "caption": "Its description includes _meta.ui.resourceUri, pointing at a ui:// resource"
+        },
+        {
+          "title": "A UI resource",
+          "caption": "An HTML page, usually bundled with its own JS and CSS"
+        }
+      ],
+      "narration": "Everything comes down to two existing MCP primitives combined in a new way. A tool whose description includes a meta dot ui dot resourceUri field, pointing at a ui colon slash slash resource. And that resource is an HTML page, usually bundled with its own JavaScript and CSS, that the host renders in place of plain text output.",
+      "audioFile": "audio/Episode02/slide-02.wav",
+      "durationInFrames": 697
+    },
+    {
+      "type": "steps",
+      "heading": "Lifecycle, step by step",
+      "items": [
+        "UI preloading \u2014 the host can prefetch the resource before the tool is even called.",
+        "Resource fetch \u2014 host fetches the HTML bundle from the server.",
+        "Sandboxed rendering \u2014 rendered inside a sandboxed iframe in the conversation.",
+        "Bidirectional communication \u2014 app and host talk over JSON-RPC on postMessage."
+      ],
+      "narration": "Four steps. First, UI preloading, because the tool description already names the resource, the host can prefetch it before the tool is even called. Second, resource fetch, the host pulls the HTML bundle from the server. Third, sandboxed rendering, that HTML goes into a sandboxed iframe right in the conversation. And fourth, bidirectional communication, the app and the host talk over a JSON-RPC dialect of MCP carried on postMessage.",
+      "audioFile": "audio/Episode02/slide-03.wav",
+      "durationInFrames": 844
+    },
+    {
+      "type": "sequence",
+      "heading": "The full sequence",
+      "actors": [
+        "User",
+        "Agent",
+        "App",
+        "Server"
+      ],
+      "messages": [
+        {
+          "from": "User",
+          "to": "Agent",
+          "label": "show me analytics"
+        },
+        {
+          "from": "Agent",
+          "to": "Server",
+          "label": "tools/call"
+        },
+        {
+          "from": "Server",
+          "to": "Agent",
+          "label": "tool result",
+          "dashed": true
+        },
+        {
+          "from": "Agent",
+          "to": "App",
+          "label": "result pushed",
+          "dashed": true
+        },
+        {
+          "from": "User",
+          "to": "App",
+          "label": "user interacts"
+        },
+        {
+          "from": "App",
+          "to": "Agent",
+          "label": "tools/call"
+        },
+        {
+          "from": "Agent",
+          "to": "Server",
+          "label": "forwarded"
+        },
+        {
+          "from": "Server",
+          "to": "Agent",
+          "label": "fresh data",
+          "dashed": true
+        },
+        {
+          "from": "Agent",
+          "to": "App",
+          "label": "fresh data",
+          "dashed": true
+        }
+      ],
+      "narration": "Here's the general shape, independent of any one example. The user asks something, the agent calls a tool, the server responds, and the agent pushes that result into the app. Then when the user interacts with the app itself, the app can send its own tools call request back through the agent, which forwards it to the server, gets fresh data, and pushes it back. The app never talks to the server directly, the agent, meaning the host, always sits in the middle.",
+      "audioFile": "audio/Episode02/slide-04.wav",
+      "durationInFrames": 778
+    },
+    {
+      "type": "grid",
+      "heading": "Security model",
+      "cards": [
+        {
+          "title": "Iframe sandbox",
+          "body": "Can't touch the parent DOM, cookies, local storage, or navigate the parent page."
+        },
+        {
+          "title": "postMessage only",
+          "body": "All communication goes through a channel the host fully controls."
+        },
+        {
+          "title": "Pre-declared templates",
+          "body": "The UI is named ahead of time, so hosts can review, cache, and audit it before anything runs."
+        },
+        {
+          "title": "Auditable messaging",
+          "body": "Every UI-initiated action goes through the same consent path as a direct tool call."
+        }
+      ],
+      "narration": "The security model has four pillars. Iframe sandboxing, the app can't touch the parent page, read cookies, or navigate away. postMessage as the only channel, the host controls what capabilities the app can reach. Pre-declared templates, because the UI resource is named ahead of time in the tool description, hosts can review and cache it before anything executes. And auditable messaging, every action the UI initiates rides the same consent and audit path as a direct tool call. No special back door.",
+      "audioFile": "audio/Episode02/slide-05.wav",
+      "durationInFrames": 968
+    },
+    {
+      "type": "text",
+      "heading": "Framework support",
+      "paragraphs": [
+        "No required framework \u2014 it's standard web primitives: HTML, JS, CSS, and postMessage. Two paths depending on which side you're building:"
+      ],
+      "bullets": [
+        "Building a host? Use @mcp-ui/client, or the official App Bridge module for iframe rendering, message passing, and policy enforcement.",
+        "Building a server/app? @modelcontextprotocol/ext-apps provides a convenience App class \u2014 not mandatory, just a wrapper.",
+        "Starter templates exist for React, Vue, Svelte, Preact, Solid, and vanilla JS."
+      ],
+      "narration": "No framework is required, under the hood it's just HTML, JavaScript, CSS, and postMessage. If you're building a host, the ext-apps SDK includes an App Bridge module that handles iframe rendering and message passing for you, or there's the community mcp-ui client package. If you're building a server or app, there's a convenience App class, but it's a wrapper, not a requirement, you can implement the raw protocol yourself. Next episode: what Claude Desktop specifically supports.",
+      "audioFile": "audio/Episode02/slide-06.wav",
+      "durationInFrames": 884
+    }
+  ]
+}

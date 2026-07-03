@@ -8,3 +8,5 @@ tools/render/models/
 tools/render/*.wav
 tools/render/*.png
 tools/render/output/
+tools/remotion-video/out/
+tools/remotion-video/public/audio/

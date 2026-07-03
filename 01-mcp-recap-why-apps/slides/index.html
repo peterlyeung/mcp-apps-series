@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MCP Recap &amp; Why Apps — Episode 01</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css">
+<style>
+  :root { --accent: #d97757; }
+  .reveal h1, .reveal h2 { color: var(--accent); overflow-wrap: break-word; }
+  .reveal h1 { font-size: 1.8em; }
+  .reveal h2 { font-size: 1.5em; }
+  .reveal .slides { text-align: left; }
+  .reveal .slides section { width: 92%; margin: 0 auto; }
+  .reveal .slides section > p,
+  .reveal .slides section > ul,
+  .reveal .slides section > ol,
+  .reveal .slides section > table,
+  .reveal .slides section > dl {
+    max-width: 1040px; margin-left: auto; margin-right: auto;
+  }
+  .reveal p, .reveal li { overflow-wrap: break-word; }
+  .reveal h1, .reveal h2, .reveal .center-title { text-align: center; }
+  .reveal .small { font-size: 0.55em; }
+  .reveal code { color: #ffd7c2; }
+  .reveal ul li { margin-bottom: 0.3em; }
+  .reveal ul.compact { font-size: 0.72em; }
+  .reveal ul.compact li { margin-bottom: 0.15em; }
+  .tag {
+    display: inline-block; padding: 2px 10px; border-radius: 12px;
+    background: var(--accent); color: #1a1a1a; font-size: 0.4em;
+    vertical-align: middle; margin-left: 10px;
+  }
+  .diagram-row { display: flex; justify-content: center; gap: 60px; margin-top: 25px; }
+  .diagram-col { display: flex; flex-direction: column; align-items: center; width: 400px; }
+  .diagram-col .box {
+    border: 1px solid #ccc; border-radius: 4px; background: #1f2020;
+    color: #eee; padding: 16px; font-size: 18px; text-align: center; width: 100%;
+    box-sizing: border-box;
+  }
+  .diagram-col .label { margin-top: 10px; font-size: 15px; color: #999; }
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 25px auto 0; max-width: 900px; }
+  .compare-grid .card {
+    min-width: 0; box-sizing: border-box;
+    border: 1px solid #444; border-radius: 6px; padding: 14px 18px;
+    background: #1a1a1a; font-size: 0.62em;
+  }
+  .compare-grid .card h3 { color: var(--accent); margin: 0 0 8px 0; font-size: 1.1em; }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+  <section>
+    <h1 class="center-title">MCP Recap &amp; Why Apps</h1>
+    <p class="center-title">The gap MCP Apps was built to close</p>
+    <p class="center-title small">Episode 01 — mcp-apps-series</p>
+    <aside class="notes">
+      Before we get into MCP Apps specifically, a quick recap of MCP itself,
+      and the actual problem that led to Apps getting added as an extension
+      in the first place. If you already know MCP well, this is a fast one.
+    </aside>
+  </section>
+
+  <section>
+    <h2>MCP, in one paragraph</h2>
+    <p>MCP is a JSON-RPC based protocol connecting an LLM host — Claude
+       Desktop, an IDE, whatever — to external <strong>servers</strong>.</p>
+    <p>Servers expose three primitives: <strong>tools</strong> the model can
+       call, <strong>resources</strong> the host can read, and
+       <strong>prompts</strong> — reusable templates.</p>
+    <p class="small">Before MCP Apps: everything a tool returned was text,
+       structured JSON, images, or links — rendered as plain conversational content.</p>
+    <aside class="notes">
+      MCP is a standard protocol for connecting an LLM host to external
+      servers. Those servers expose three things: tools the model can call,
+      resources the host can read, and prompts — reusable templates. Up until
+      MCP Apps, whatever a tool returned was always rendered as plain
+      conversational content — text, JSON, images, links. Nothing interactive.
+    </aside>
+  </section>
+
+  <section>
+    <h2>The gap: text breaks down for...</h2>
+    <ul class="compact">
+      <li><strong>Exploring data</strong> — a wall of numbers vs. a map you click and drill into.</li>
+      <li><strong>Configuring many options</strong> — ten back-and-forth questions vs. one form with defaults.</li>
+      <li><strong>Rich media</strong> — a PDF or 3D model needs an actual viewer, not a description.</li>
+      <li><strong>Real-time monitoring</strong> — a dashboard needs to update live, not on request.</li>
+      <li><strong>Multi-step workflows</strong> — approvals and triage need navigation and persistent state.</li>
+    </ul>
+    <aside class="notes">
+      Five situations where text-only responses genuinely break down.
+      Exploring complex data — a wall of numbers versus an interactive map.
+      Configuring lots of options — ten back and forth questions versus one
+      form. Rich media like PDFs or 3D models that need an actual viewer.
+      Real-time monitoring, where a dashboard needs to update on its own.
+      And multi-step workflows like approvals, which need real navigation and
+      state that persists across turns.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Why not just send a link?</h2>
+    <div class="compare-grid">
+      <div class="card">
+        <h3>Context preservation</h3>
+        No tab switching — the UI lives right inside the conversation.
+      </div>
+      <div class="card">
+        <h3>Bidirectional data flow</h3>
+        The app can call any tool on the server; no separate API or auth stack.
+      </div>
+      <div class="card">
+        <h3>Host delegation</h3>
+        The app can ask the host to act — the host routes it through tools the user already connected.
+      </div>
+      <div class="card">
+        <h3>Security by construction</h3>
+        Runs in a sandboxed iframe — the host can safely render code it doesn't fully trust.
+      </div>
+    </div>
+    <aside class="notes">
+      A reasonable question: why not just build a normal web app and send a
+      link? Four reasons MCP Apps beats that. Context preservation — no tab
+      switching, the UI is right there in the thread. Bidirectional data
+      flow — the embedded app can call tools on the same server for free,
+      reusing MCP's existing session, instead of standing up a separate API.
+      Host delegation — the app can ask the host to take an action, and the
+      host routes it through whatever the user has already connected.
+      And security by construction — it runs in a sandboxed iframe, so the
+      host can render it without fully trusting the server author.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Who built it</h2>
+    <div class="diagram-row">
+      <div class="diagram-col">
+        <div class="box">Anthropic + OpenAI<br>co-developed the spec</div>
+        <div class="label">Built on the community MCP-UI project</div>
+      </div>
+      <div class="diagram-col">
+        <div class="box">SEP-1865<br>shipped 2026-01-26</div>
+        <div class="label">First official MCP extension</div>
+      </div>
+    </div>
+    <p class="small">Launch hosts: Claude (web + desktop), ChatGPT, VS Code Copilot, Goose.
+       Launch partners include Figma, Canva, Slack, Salesforce, Asana, and more.</p>
+    <aside class="notes">
+      MCP Apps was co-developed by Anthropic and OpenAI, building on the
+      community MCP-UI project, and shipped as SEP-1865 — the first official
+      MCP extension — on January 26th, 2026. Launch host support included
+      Claude on web and desktop, ChatGPT, VS Code Copilot, and Goose, with
+      launch partners like Figma, Canva, Slack, and Salesforce. Next episode,
+      we go deep on exactly how the protocol works under the hood.
+    </aside>
+  </section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script type="module">
+  const deck = new Reveal({
+    plugins: [ RevealNotes ],
+    hash: true,
+    width: 1280,
+    height: 720,
+  });
+  deck.initialize();
+</script>
+</body>
+</html>

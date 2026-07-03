@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Claude Desktop MCP Support — Episode 03</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css">
+<style>
+  :root { --accent: #d97757; }
+  .reveal h1, .reveal h2 { color: var(--accent); overflow-wrap: break-word; }
+  .reveal h1 { font-size: 1.8em; }
+  .reveal h2 { font-size: 1.4em; }
+  .reveal .slides { text-align: left; }
+  .reveal .slides section { width: 92%; margin: 0 auto; }
+  .reveal .slides section > p,
+  .reveal .slides section > ul,
+  .reveal .slides section > ol,
+  .reveal .slides section > table,
+  .reveal .slides section > dl {
+    max-width: 1040px; margin-left: auto; margin-right: auto;
+  }
+  .reveal p, .reveal li { overflow-wrap: break-word; }
+  .reveal h1, .reveal h2, .reveal .center-title { text-align: center; }
+  .reveal .small { font-size: 0.55em; }
+  .reveal code { color: #ffd7c2; }
+  .reveal ul li { margin-bottom: 0.3em; }
+  .reveal ul.compact { font-size: 0.68em; }
+  .reveal ul.compact li { margin-bottom: 0.15em; }
+  .tag {
+    display: inline-block; padding: 2px 10px; border-radius: 12px;
+    background: var(--accent); color: #1a1a1a; font-size: 0.4em;
+    vertical-align: middle; margin-left: 10px;
+  }
+  .layer-stack { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; align-items: center; }
+  .layer-stack .layer {
+    width: 640px; max-width: 90%; border: 1px solid #ccc; border-radius: 6px;
+    background: #1f2020; padding: 14px 20px; box-sizing: border-box;
+  }
+  .layer-stack .layer h3 { margin: 0 0 4px 0; color: var(--accent); font-size: 0.85em; }
+  .layer-stack .layer p { margin: 0; font-size: 0.6em; color: #ddd; }
+  .steps { counter-reset: step; list-style: none; padding: 0; margin-top: 16px; }
+  .steps li {
+    counter-increment: step; position: relative; padding: 6px 0 6px 40px;
+    font-size: 0.65em; margin-bottom: 4px;
+  }
+  .steps li::before {
+    content: counter(step); position: absolute; left: 0; top: 2px;
+    width: 26px; height: 26px; border-radius: 50%; background: var(--accent);
+    color: #1a1a1a; font-weight: bold; display: flex; align-items: center;
+    justify-content: center; font-size: 0.85em;
+  }
+  .warn {
+    border-left: 3px solid #d9a057; background: rgba(217, 160, 87, 0.1);
+    padding: 10px 16px; font-size: 0.6em; margin-top: 16px;
+  }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+  <section>
+    <h1 class="center-title">Claude Desktop &amp; MCP</h1>
+    <p class="center-title">Three related but distinct capabilities</p>
+    <p class="center-title small">Episode 03 — mcp-apps-series</p>
+    <aside class="notes">
+      Claude Desktop has at least three MCP-adjacent capabilities that are
+      easy to lump together but are actually separate layers. Getting this
+      distinction right matters, because it's the part most likely to
+      confuse people trying this out for the first time.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Three layers</h2>
+    <div class="layer-stack">
+      <div class="layer">
+        <h3>1. MCP servers — the base protocol</h3>
+        <p>Local (stdio) or remote — gives Claude tools, resources, and prompts from that server.</p>
+      </div>
+      <div class="layer">
+        <h3>2. MCPB — desktop extensions</h3>
+        <p>How you <strong>install</strong> a local MCP server: a zip file, one-click setup.</p>
+      </div>
+      <div class="layer">
+        <h3>3. MCP Apps — interactive UI rendering</h3>
+        <p>What happens <strong>after</strong> a tool call, if the tool declares a UI resource.</p>
+      </div>
+    </div>
+    <aside class="notes">
+      Layer one is the base protocol — connecting to an MCP server at all,
+      local or remote, to get its tools, resources, and prompts. Layer two,
+      MCPB, is specifically about installation — packaging a local server as
+      a one-click extension. Layer three, MCP Apps, is about what happens
+      after a tool call — whether the result renders as an interactive UI.
+      These three are independent axes, not steps in a single pipeline.
+    </aside>
+  </section>
+
+  <section>
+    <h2>MCPB — desktop extensions</h2>
+    <ul class="compact">
+      <li>An <code>.mcpb</code> file = a zip archive with a local MCP server + a <code>manifest.json</code></li>
+      <li>One-click install: double-click, drag in, or Settings → Extensions</li>
+      <li>Runs locally over stdio; bundles dependencies; works offline; no OAuth needed</li>
+      <li>Good fit for firewalled systems, local tools, piggybacking on existing SSO</li>
+      <li>Previously called "DXT" — renamed to MCPB</li>
+    </ul>
+    <aside class="notes">
+      MCPB — an m c p b file is a zip archive containing a local MCP server
+      plus a manifest dot json. You install it with a double-click, by
+      dragging it in, or through Settings, Extensions. It runs locally over
+      stdio, bundles its own dependencies, works offline, and needs no OAuth.
+      Good fit for internal tools behind a firewall, or anything that wants
+      to piggyback on existing single sign-on. This used to be called D X T,
+      and got renamed to MCPB.
+    </aside>
+  </section>
+
+  <section>
+    <h2>MCP Apps support in Claude Desktop</h2>
+    <ul class="compact">
+      <li>Claude — both claude.ai web <strong>and</strong> Claude Desktop — is a launch host for MCP Apps, since Jan 2026</li>
+      <li>Any connected tool that declares a <code>ui://</code> resource renders as a sandboxed iframe, inline in chat</li>
+      <li>Works the same whether the server was installed via MCPB <strong>or</strong> connected remotely — install and render are orthogonal</li>
+    </ul>
+    <div class="warn">Known rough edge: there's at least one open GitHub issue about MCP Apps UI not always rendering in Claude Desktop / claude.ai. Bleeding edge — expect occasional bugs.</div>
+    <aside class="notes">
+      Claude — both the web app and Claude Desktop — is a launch host for MCP
+      Apps. Any connected tool that declares a ui resource renders as a
+      sandboxed iframe right inline in the chat, and this works identically
+      whether the server was installed as an MCPB extension or connected
+      remotely — install and render are genuinely orthogonal concerns. One
+      honest caveat: this is bleeding edge, there's at least one open GitHub
+      issue about rendering not always working — worth expecting occasional
+      bugs at this stage.
+    </aside>
+  </section>
+
+  <section>
+    <h2>How to actually try this today</h2>
+    <ol class="steps">
+      <li>Settings → Extensions in Claude Desktop</li>
+      <li>Browse extensions (Anthropic-reviewed) or install a custom <code>.mcpb</code></li>
+      <li>Call a tool that declares an MCP Apps UI resource in a normal conversation</li>
+      <li>For remote servers, same rendering applies once connected — no MCPB needed</li>
+    </ol>
+    <aside class="notes">
+      If you want to try this yourself: open Settings, then Extensions, in
+      Claude Desktop. Browse the Anthropic-reviewed directory, or install a
+      custom m c p b file. Then just call a tool that declares an MCP Apps UI
+      resource in a normal conversation — that's it, no extra steps. And for
+      remote MCP servers, the exact same rendering applies once you've
+      connected them — you don't need MCPB at all for that path. Next
+      episode, we stop describing this and actually build one.
+    </aside>
+  </section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script type="module">
+  const deck = new Reveal({
+    plugins: [ RevealNotes ],
+    hash: true,
+    width: 1280,
+    height: 720,
+  });
+  deck.initialize();
+</script>
+</body>
+</html>

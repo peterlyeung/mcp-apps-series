@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Real-World Examples — Episode 05</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css">
+<style>
+  :root { --accent: #d97757; }
+  .reveal h1, .reveal h2 { color: var(--accent); overflow-wrap: break-word; }
+  .reveal h1 { font-size: 1.8em; }
+  .reveal h2 { font-size: 1.4em; }
+  .reveal .slides { text-align: left; }
+  .reveal .slides section { width: 92%; margin: 0 auto; }
+  .reveal .slides section > p,
+  .reveal .slides section > ul,
+  .reveal .slides section > ol,
+  .reveal .slides section > table,
+  .reveal .slides section > dl {
+    max-width: 1040px; margin-left: auto; margin-right: auto;
+  }
+  .reveal p, .reveal li { overflow-wrap: break-word; }
+  .reveal h1, .reveal h2, .reveal .center-title { text-align: center; }
+  .reveal .small { font-size: 0.55em; }
+  .reveal code { color: #ffd7c2; }
+  .reveal ul li { margin-bottom: 0.3em; }
+  .reveal ul.compact { font-size: 0.68em; }
+  .reveal ul.compact li { margin-bottom: 0.15em; }
+  .tag {
+    display: inline-block; padding: 2px 10px; border-radius: 12px;
+    background: var(--accent); color: #1a1a1a; font-size: 0.4em;
+    vertical-align: middle; margin-left: 10px;
+  }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 20px auto 0; max-width: 950px; }
+  .grid3 .card {
+    min-width: 0; box-sizing: border-box;
+    border: 1px solid #444; border-radius: 6px; padding: 12px 14px;
+    background: #1a1a1a; font-size: 0.52em;
+  }
+  .grid3 .card h3 { color: var(--accent); margin: 0 0 6px 0; font-size: 1.15em; }
+  .grid3 .card ul { margin: 0; padding-left: 16px; }
+  .grid3 .card li { margin-bottom: 3px; }
+  .partner-row {
+    display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 24px;
+    max-width: 1040px; margin-left: auto; margin-right: auto;
+  }
+  .partner-row span {
+    border: 1px solid #555; border-radius: 20px; padding: 8px 18px;
+    font-size: 0.65em; color: #eee; background: #1f2020;
+  }
+  .roadmap { list-style: none; padding: 0; margin-top: 20px; }
+  .roadmap li {
+    padding: 8px 14px; margin-bottom: 6px; border-left: 3px solid var(--accent);
+    background: rgba(217, 119, 87, 0.08); font-size: 0.6em;
+  }
+  .roadmap .ep-num { color: var(--accent); font-weight: bold; margin-right: 10px; }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+  <section>
+    <h1 class="center-title">Real-World Examples</h1>
+    <p class="center-title">A map of what's out there to explore next</p>
+    <p class="center-title small">Episode 05 — mcp-apps-series</p>
+    <aside class="notes">
+      We built one MCP App from scratch in episode four — a small dice
+      roller. This episode is about zooming back out: what does the official
+      example gallery look like, and who's actually shipping this in
+      production today. Consider this the map for where to go exploring on
+      your own after the series wraps.
+    </aside>
+  </section>
+
+  <section>
+    <h2>The official example gallery</h2>
+    <div class="grid3">
+      <div class="card">
+        <h3>3D &amp; visualization</h3>
+        <ul>
+          <li>map-server (CesiumJS globe)</li>
+          <li>threejs-server</li>
+          <li>shadertoy-server</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Data exploration</h3>
+        <ul>
+          <li>cohort-heatmap-server</li>
+          <li>customer-segmentation-server</li>
+          <li>wiki-explorer-server</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Business apps</h3>
+        <ul>
+          <li>scenario-modeler-server</li>
+          <li>budget-allocator-server</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Media</h3>
+        <ul>
+          <li>pdf-server</li>
+          <li>video-resource-server</li>
+          <li>sheet-music-server</li>
+          <li>say-server (text-to-speech)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Utilities</h3>
+        <ul>
+          <li>qr-server</li>
+          <li>system-monitor-server</li>
+          <li>transcript-server</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Starter templates</h3>
+        <ul>
+          <li>React, Vue, Svelte</li>
+          <li>Preact, Solid</li>
+          <li>vanilla JavaScript</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">
+      The official ext-apps repository ships a genuinely wide gallery of
+      example servers. Three-D and visualization — a CesiumJS globe, Three
+      dot js scenes, shader effects. Data exploration tools like cohort
+      heatmaps and customer segmentation. Business apps — scenario modelers,
+      budget allocators. Media — PDF viewers, video, sheet music, even
+      text-to-speech. Utilities like QR codes and system monitors. And
+      starter templates in every major framework if you want to build your
+      own instead of starting from scratch like we did in episode four.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Who's shipping this in production</h2>
+    <div class="partner-row">
+      <span>Figma</span><span>Canva</span><span>Slack</span><span>Salesforce</span>
+      <span>Asana</span><span>Box</span><span>monday.com</span><span>Clay</span>
+      <span>Hex</span><span>Amplitude</span>
+    </div>
+    <p class="small" style="text-align:center; margin-top:20px;">Launch partners named in the January 2026 MCP Apps announcement.</p>
+    <aside class="notes">
+      These aren't just demos — real companies were named as launch partners
+      when MCP Apps was announced: Figma, Canva, Slack, Salesforce, Asana,
+      Box, monday dot com, Clay, Hex, and Amplitude. Worth checking which of
+      these have public MCP Apps integrations live by the time you're
+      watching this, since this space is moving fast.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Series recap</h2>
+    <ul class="roadmap">
+      <li><span class="ep-num">01</span>MCP recap — why "Apps" got added at all</li>
+      <li><span class="ep-num">02</span>The protocol — lifecycle and security model</li>
+      <li><span class="ep-num">03</span>Claude Desktop's three distinct layers of support</li>
+      <li><span class="ep-num">04</span>A real MCP App, built from scratch</li>
+      <li><span class="ep-num">05</span>This episode — the wider ecosystem</li>
+    </ul>
+    <p class="small" style="margin-top: 16px;">Full write-up + working code: github.com/peterlyeung/mcp-apps-series</p>
+    <aside class="notes">
+      That closes out the series. We went from a plain MCP recap, through the
+      actual protocol and its security model, to what Claude Desktop
+      specifically supports, to building a real working MCP App from
+      scratch, and finally this tour of the wider ecosystem. Everything —
+      notes, slides, and the working dice server — is in the repo if you
+      want to build on any of it yourself.
+    </aside>
+  </section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script type="module">
+  const deck = new Reveal({
+    plugins: [ RevealNotes ],
+    hash: true,
+    width: 1280,
+    height: 720,
+  });
+  deck.initialize();
+</script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+{
+  "id": "Episode00",
+  "title": "Series Overview",
+  "slides": [
+    {
+      "type": "title",
+      "title": "MCP Apps & Claude Desktop",
+      "subtitle": "A learning series \u2014 episode by episode",
+      "eyebrow": "Episode 00 \u2014 series overview",
+      "narration": "Welcome to a new series about MCP Apps, a brand new extension to the Model Context Protocol that lets tools return interactive UI instead of just text, and how Claude Desktop specifically supports it. This first episode is a quick map of the territory before we go deep: what we mean by a few key terms, and what each episode in the series covers.",
+      "audioFile": "audio/Episode00/slide-01.wav",
+      "durationInFrames": 686
+    },
+    {
+      "type": "text",
+      "heading": "What this series is about",
+      "paragraphs": [
+        "MCP has always been about connecting a model to tools and data through text. MCP Apps is new: it lets an MCP server hand back a whole interactive UI that renders live inside the chat window.",
+        "This series is about understanding that extension, and specifically how Claude Desktop implements it, with a real, working example built from scratch along the way."
+      ],
+      "narration": "Up to this point, MCP has mostly meant: the model calls a tool, the tool returns text or structured data, and that's what shows up in the conversation. MCP Apps changes that by letting a tool point at an actual interactive HTML interface, dashboards, forms, 3D viewers, that the host renders live. This series exists to understand that shift, and in particular how Claude Desktop, specifically, supports it today.",
+      "audioFile": "audio/Episode00/slide-02.wav",
+      "durationInFrames": 796
+    },
+    {
+      "type": "twoColumn",
+      "heading": "Two things that sound alike but aren't",
+      "columns": [
+        {
+          "title": "MCPB",
+          "caption": "How you install an MCP server into Claude Desktop. A zip file, one-click setup, runs locally."
+        },
+        {
+          "title": "MCP Apps",
+          "caption": "What happens after a tool call \u2014 a server returns UI, the host renders it inline."
+        }
+      ],
+      "narration": "Here's the distinction that's easiest to conflate, and worth locking in early. MCPB is how you install an MCP server into Claude Desktop, settings, extensions, a dot m c p b file. MCP Apps is a completely different layer: what happens after a tool call, when the server hands back an interactive UI instead of plain text. A single server can use both, ship as an MCPB for easy install, and also expose tools that render MCP Apps UI. They're orthogonal, not the same thing.",
+      "audioFile": "audio/Episode00/slide-03.wav",
+      "durationInFrames": 973
+    },
+    {
+      "type": "glossary",
+      "heading": "Glossary \u2014 the terms we'll keep using",
+      "terms": [
+        {
+          "term": "MCP",
+          "def": "Model Context Protocol \u2014 connects an LLM host to external tools, data, and prompts."
+        },
+        {
+          "term": "MCP Apps",
+          "def": "SEP-1865, shipped Jan 2026 \u2014 lets a tool point at a ui:// resource the host renders."
+        },
+        {
+          "term": "Host",
+          "def": "The client app embedding the UI \u2014 Claude Desktop, claude.ai, VS Code, etc."
+        },
+        {
+          "term": "App Bridge",
+          "def": "SDK module hosts use to render apps in sandboxed iframes and manage messaging."
+        },
+        {
+          "term": "MCPB",
+          "def": "Claude Desktop's packaging format for installable local MCP servers (formerly \"DXT\")."
+        }
+      ],
+      "narration": "A handful of terms will come up again and again, so let's define them once. M C P is the base protocol. MCP Apps is the specific extension this series is about. Host just means whatever app is embedding the UI, Claude Desktop, claude dot A I, VS Code. App Bridge is the SDK piece hosts use to actually render an app safely. And MCPB is Claude Desktop's install format, previously called D X T.",
+      "audioFile": "audio/Episode00/slide-04.wav",
+      "durationInFrames": 810
+    },
+    {
+      "type": "roadmap",
+      "heading": "Where this series is going",
+      "items": [
+        {
+          "num": "01",
+          "text": "MCP recap and why \"Apps\" got added"
+        },
+        {
+          "num": "02",
+          "text": "MCP Apps deep dive \u2014 protocol, lifecycle, security"
+        },
+        {
+          "num": "03",
+          "text": "What Claude Desktop specifically supports"
+        },
+        {
+          "num": "04",
+          "text": "Build your first MCP App, hands-on"
+        },
+        {
+          "num": "05",
+          "text": "A tour of real-world example servers"
+        }
+      ],
+      "narration": "Here's the plan. Episode one is a quick MCP recap and the motivation for adding Apps at all. Episode two goes deep on the actual protocol, the handshake, the lifecycle, the security model. Episode three is specifically about Claude Desktop's support, since there are a few overlapping pieces worth being precise about. Episode four is hands-on: we build a real, working MCP App from scratch. And episode five tours the official example servers to see the pattern applied for real. Let's get into it.",
+      "audioFile": "audio/Episode00/slide-05.wav",
+      "durationInFrames": 950
+    }
+  ]
+}

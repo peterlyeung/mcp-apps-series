@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Series Overview — Episode 00</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css">
+<style>
+  :root { --accent: #d97757; }
+  .reveal h1, .reveal h2 { color: var(--accent); overflow-wrap: break-word; }
+  .reveal h1 { font-size: 1.8em; }
+  .reveal h2 { font-size: 1.5em; }
+  .reveal .slides { text-align: left; }
+  .reveal .slides section { width: 92%; margin: 0 auto; }
+  .reveal .slides section > p,
+  .reveal .slides section > ul,
+  .reveal .slides section > ol,
+  .reveal .slides section > table,
+  .reveal .slides section > dl {
+    max-width: 1040px; margin-left: auto; margin-right: auto;
+  }
+  .reveal p, .reveal li { overflow-wrap: break-word; }
+  .reveal h1, .reveal h2, .reveal .center-title { text-align: center; }
+  .reveal .small { font-size: 0.55em; }
+  .reveal code { color: #ffd7c2; }
+  .reveal ul li { margin-bottom: 0.3em; }
+  .reveal ul.compact { font-size: 0.75em; }
+  .reveal ul.compact li { margin-bottom: 0.15em; }
+  .tag {
+    display: inline-block; padding: 2px 10px; border-radius: 12px;
+    background: var(--accent); color: #1a1a1a; font-size: 0.4em;
+    vertical-align: middle; margin-left: 10px;
+  }
+  .diagram-row { display: flex; justify-content: center; gap: 80px; margin-top: 30px; }
+  .diagram-col { display: flex; flex-direction: column; align-items: center; }
+  .diagram-col .box {
+    border: 1px solid #ccc; border-radius: 4px; background: #1f2020;
+    color: #eee; padding: 14px 22px; font-size: 20px; text-align: center;
+    min-width: 220px;
+  }
+  .diagram-col .caption { margin-top: 14px; font-size: 16px; color: #999; max-width: 260px; text-align: center; }
+  .glossary { display: grid; grid-template-columns: auto 1fr; gap: 10px 20px; margin-top: 20px; font-size: 0.65em; }
+  .glossary dt { color: var(--accent); font-family: monospace; text-align: right; }
+  .glossary dd { margin: 0; color: #eee; }
+  .roadmap { list-style: none; padding: 0; margin-top: 30px; }
+  .roadmap li {
+    padding: 10px 16px; margin-bottom: 8px; border-left: 3px solid var(--accent);
+    background: rgba(217, 119, 87, 0.08); font-size: 0.7em;
+  }
+  .roadmap .ep-num { color: var(--accent); font-weight: bold; margin-right: 10px; }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+  <section>
+    <h1 class="center-title">MCP Apps &amp; Claude Desktop</h1>
+    <p class="center-title">A learning series — episode by episode</p>
+    <p class="center-title small">Episode 00 — series overview</p>
+    <aside class="notes">
+      Welcome to a new series about MCP Apps — a brand new extension to the
+      Model Context Protocol that lets tools return interactive UI instead of
+      just text, and how Claude Desktop specifically supports it. This first
+      episode is a quick map of the territory before we go deep: what we mean
+      by a few key terms, and what each episode in the series covers.
+    </aside>
+  </section>
+
+  <section>
+    <h2>What this series is about</h2>
+    <p>MCP has always been about connecting a model to tools and data through
+       text. <strong>MCP Apps</strong> is new: it lets an MCP server hand back
+       a whole interactive UI that renders live inside the chat window.</p>
+    <p>This series is about understanding that extension, and specifically how
+       <strong>Claude Desktop</strong> implements it — with a real, working
+       example built from scratch along the way.</p>
+    <aside class="notes">
+      Up to this point, MCP has mostly meant: the model calls a tool, the tool
+      returns text or structured data, and that's what shows up in the
+      conversation. MCP Apps changes that by letting a tool point at an actual
+      interactive HTML interface — dashboards, forms, 3D viewers — that the
+      host renders live. This series exists to understand that shift, and in
+      particular how Claude Desktop, specifically, supports it today.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Two things that sound alike but aren't</h2>
+    <div class="diagram-row">
+      <div class="diagram-col">
+        <div class="box">MCPB</div>
+        <div class="caption">How you <strong>install</strong> an MCP server into Claude Desktop. A zip file, one-click setup, runs locally.</div>
+      </div>
+      <div class="diagram-col">
+        <div class="box">MCP Apps</div>
+        <div class="caption">What happens <strong>after</strong> a tool call — a server returns UI, the host renders it inline.</div>
+      </div>
+    </div>
+    <aside class="notes">
+      Here's the distinction that's easiest to conflate, and worth locking in
+      early. MCPB is how you install an MCP server into Claude Desktop —
+      settings, extensions, a dot m c p b file. MCP Apps is a completely
+      different layer: what happens after a tool call, when the server hands
+      back an interactive UI instead of plain text. A single server can use
+      both — ship as an MCPB for easy install, and also expose tools that
+      render MCP Apps UI. They're orthogonal, not the same thing.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Glossary — the terms we'll keep using</h2>
+    <dl class="glossary">
+      <dt>MCP</dt><dd>Model Context Protocol — connects an LLM host to external tools, data, and prompts.</dd>
+      <dt>MCP Apps</dt><dd>SEP-1865, shipped Jan 2026 — lets a tool point at a <code>ui://</code> resource the host renders.</dd>
+      <dt>Host</dt><dd>The client app embedding the UI — Claude Desktop, claude.ai, VS Code, etc.</dd>
+      <dt>App Bridge</dt><dd>SDK module hosts use to render apps in sandboxed iframes and manage messaging.</dd>
+      <dt>MCPB</dt><dd>Claude Desktop's packaging format for installable local MCP servers (formerly "DXT").</dd>
+    </dl>
+    <aside class="notes">
+      A handful of terms will come up again and again, so let's define them
+      once. M C P is the base protocol. MCP Apps is the specific extension
+      this series is about. Host just means whatever app is embedding the
+      UI — Claude Desktop, claude dot A I, VS Code. App Bridge is the SDK
+      piece hosts use to actually render an app safely. And MCPB is Claude
+      Desktop's install format, previously called D X T.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Where this series is going</h2>
+    <ul class="roadmap">
+      <li><span class="ep-num">01</span>MCP recap and why "Apps" got added</li>
+      <li><span class="ep-num">02</span>MCP Apps deep dive — protocol, lifecycle, security</li>
+      <li><span class="ep-num">03</span>What Claude Desktop specifically supports</li>
+      <li><span class="ep-num">04</span>Build your first MCP App, hands-on</li>
+      <li><span class="ep-num">05</span>A tour of real-world example servers</li>
+    </ul>
+    <aside class="notes">
+      Here's the plan. Episode one is a quick MCP recap and the motivation
+      for adding Apps at all. Episode two goes deep on the actual protocol —
+      the handshake, the lifecycle, the security model. Episode three is
+      specifically about Claude Desktop's support, since there are a few
+      overlapping pieces worth being precise about. Episode four is hands-on:
+      we build a real, working MCP App from scratch. And episode five tours
+      the official example servers to see the pattern applied for real.
+      Let's get into it.
+    </aside>
+  </section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script type="module">
+  const deck = new Reveal({
+    plugins: [ RevealNotes ],
+    hash: true,
+    width: 1280,
+    height: 720,
+  });
+  deck.initialize();
+</script>
+</body>
+</html>

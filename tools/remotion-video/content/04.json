@@ -1,0 +1,220 @@
+{
+  "id": "Episode04",
+  "title": "MCP Apps in Claude Desktop",
+  "slides": [
+    {
+      "type": "title",
+      "title": "MCP Apps in Claude Desktop",
+      "subtitle": "How the connection, the response, and the render actually work",
+      "eyebrow": "Episode 04 \u2014 mcp-apps-series",
+      "narration": "In the last episode we built a working MCP App from scratch, a dice roller that renders as an interactive card inside Claude Desktop. In this episode, we're going to slow down and look at exactly what's happening under the hood: how Claude Desktop finds and talks to the server, what comes back over the wire, and how that turns into a clickable UI in the chat.",
+      "audioFile": "audio/Episode04/slide-01.wav",
+      "durationInFrames": 693
+    },
+    {
+      "type": "twoColumn",
+      "heading": "An MCP server can live in two places",
+      "intro": "Before we look at our demo, one thing worth being clear on: our dice server runs on your laptop. That's one option, not the only one.",
+      "columns": [
+        {
+          "title": "Claude Desktop",
+          "middleLabel": "stdio",
+          "bottomTitle": "MCP server on your machine",
+          "caption": "Local transport"
+        },
+        {
+          "title": "Claude Desktop",
+          "middleLabel": "HTTPS + OAuth",
+          "bottomTitle": "MCP server in the cloud",
+          "caption": "Remote transport"
+        }
+      ],
+      "narration": "MCP actually supports two transports. Stdio is local: Claude Desktop launches the server as a child process on your machine and talks to it over standard input and output. That's what we built. But there's also Streamable HTTP: a remote MCP server running on someone else's infrastructure, a company's cloud, a SaaS product, that Claude Desktop talks to over the network instead, usually authenticating with OAuth. In Claude Desktop, local servers go in the config file; remote ones get added as Custom Connectors in Settings. Everything we're about to walk through, the tool declaring a UI resource, the sandboxed iframe, the handshake, works identically either way. Local versus remote is only about how Claude Desktop reaches the server, not about how the UI renders.",
+      "audioFile": "audio/Episode04/slide-02.wav",
+      "durationInFrames": 1457
+    },
+    {
+      "type": "twoColumn",
+      "heading": "Our demo: the local path",
+      "tag": "what we built",
+      "columns": [
+        {
+          "title": "Claude Desktop",
+          "middleLabel": "stdio",
+          "bottomTitle": "server.py",
+          "caption": "Channel 1: MCP client <-> server"
+        },
+        {
+          "title": "Claude Desktop",
+          "middleLabel": "postMessage",
+          "bottomTitle": "Sandboxed iframe",
+          "caption": "Channel 2: host <-> rendered UI"
+        }
+      ],
+      "small": "Two separate channels: Claude Desktop <-> server.py over stdio, and Claude Desktop <-> iframe over postMessage. The iframe never talks to server.py directly.",
+      "narration": "Claude Desktop doesn't connect to our server over a network, it launches server.py as a child process and talks to it over stdin and stdout. Every message in both directions is one line of JSON-RPC. And notice there are two separate channels here: Claude Desktop to server-dot-py over stdio, and Claude Desktop to the sandboxed iframe over postMessage. The iframe never talks to our Python server directly, the host always sits in the middle and mediates everything. That's the security boundary.",
+      "audioFile": "audio/Episode04/slide-03.wav",
+      "durationInFrames": 945
+    },
+    {
+      "type": "table",
+      "heading": "What the server responds with",
+      "rows": [
+        [
+          "initialize",
+          "protocolVersion, capabilities, serverInfo"
+        ],
+        [
+          "tools/list",
+          "roll_dice tool, with _meta.ui.resourceUri"
+        ],
+        [
+          "tools/call",
+          "text content + structuredContent (the real data)"
+        ],
+        [
+          "resources/list",
+          "one resource, mimeType: text/html;profile=mcp-app"
+        ],
+        [
+          "resources/read",
+          "the full HTML/JS page for the UI"
+        ]
+      ],
+      "small": "_meta.ui.resourceUri and the mcp-app mime type are what tell Claude Desktop to render a UI, not just text.",
+      "narration": "Five request types, five response shapes. The two that matter most: when the host asks for the tool list, our roll_dice tool includes a meta dot ui dot resourceUri field, that's the line that says this tool has a UI, go fetch it. And when the host reads that resource, it comes back with a mime type of text-html profile mcp-app. Those two signals together are what tell Claude Desktop to render this as an interactive card instead of just printing text.",
+      "audioFile": "audio/Episode04/slide-04.wav",
+      "durationInFrames": 882
+    },
+    {
+      "type": "sequence",
+      "heading": "From tool call to clickable card",
+      "actors": [
+        "User",
+        "Claude Desktop",
+        "server.py",
+        "iframe"
+      ],
+      "messages": [
+        {
+          "from": "User",
+          "to": "Claude Desktop",
+          "label": "roll a d20"
+        },
+        {
+          "from": "Claude Desktop",
+          "to": "server.py",
+          "label": "tools/call roll_dice"
+        },
+        {
+          "from": "server.py",
+          "to": "Claude Desktop",
+          "label": "value = 19",
+          "dashed": true
+        },
+        {
+          "from": "Claude Desktop",
+          "to": "server.py",
+          "label": "resources/read"
+        },
+        {
+          "from": "server.py",
+          "to": "Claude Desktop",
+          "label": "HTML page",
+          "dashed": true
+        },
+        {
+          "from": "Claude Desktop",
+          "to": "iframe",
+          "label": "render in iframe"
+        },
+        {
+          "from": "iframe",
+          "to": "Claude Desktop",
+          "label": "ui/initialize"
+        },
+        {
+          "from": "Claude Desktop",
+          "to": "iframe",
+          "label": "hostContext",
+          "dashed": true
+        },
+        {
+          "from": "iframe",
+          "to": "Claude Desktop",
+          "label": "initialized"
+        },
+        {
+          "from": "Claude Desktop",
+          "to": "iframe",
+          "label": "tool-result: 19",
+          "dashed": true
+        }
+      ],
+      "narration": "Here's the full lifecycle. The model decides to call roll_dice. The server responds with structured content. The host notices the tool declared a UI resource, fetches it, and renders it in a sandboxed iframe. The iframe then initializes itself by sending a ui-initialize message to the host over postMessage, the host responds with context like the current theme, the iframe confirms it's ready, and then the host pushes the actual roll result into the iframe as a notification. Notice the app didn't ask for that result, the host just delivered it, because it already knew this was the tool call that triggered the render.",
+      "audioFile": "audio/Episode04/slide-05.wav",
+      "durationInFrames": 1157
+    },
+    {
+      "type": "sequenceWithBullets",
+      "heading": "The part that makes it interactive",
+      "actors": [
+        "User",
+        "Claude Desktop",
+        "server.py",
+        "iframe"
+      ],
+      "messages": [
+        {
+          "from": "User",
+          "to": "iframe",
+          "label": "clicks Roll Again"
+        },
+        {
+          "from": "iframe",
+          "to": "Claude Desktop",
+          "label": "tools/call roll_dice"
+        },
+        {
+          "from": "Claude Desktop",
+          "to": "server.py",
+          "label": "tools/call roll_dice"
+        },
+        {
+          "from": "server.py",
+          "to": "Claude Desktop",
+          "label": "new value",
+          "dashed": true
+        },
+        {
+          "from": "Claude Desktop",
+          "to": "iframe",
+          "label": "matched response",
+          "dashed": true
+        }
+      ],
+      "bullets": [
+        "The first roll is model-initiated \u2014 pushed as a notification.",
+        "\"Roll Again\" is app-initiated \u2014 the iframe sends its own tools/call.",
+        "The model is not involved in the second leg at all."
+      ],
+      "narration": "This is the half of the story that's easy to miss. Clicking Roll Again doesn't go back to the model at all. The iframe itself sends a tools-call request, with its own request id, straight to the host. The host forwards it to server-dot-py, gets a fresh roll, and routes the response back to the iframe by matching that id. That's what turns this from a one-shot snapshot into an actual interactive app, the UI can keep calling tools on its own.",
+      "audioFile": "audio/Episode04/slide-06.wav",
+      "durationInFrames": 790
+    },
+    {
+      "type": "text",
+      "heading": "Recap",
+      "bullets": [
+        "MCP servers can be local (stdio) or remote (Streamable HTTP) \u2014 MCP Apps rendering works the same either way.",
+        "A tool opts into a UI via _meta.ui.resourceUri, served with mime type mcp-app.",
+        "The UI renders in a sandboxed iframe that only talks to the host, never the server.",
+        "Two round trips: model-initiated (pushed as a notification) and app-initiated (the UI calling tools itself)."
+      ],
+      "small": "Full write-up + working code: github.com/peterlyeung/mcp-apps-series",
+      "narration": "So to recap: local versus remote is just about how Claude Desktop reaches the server. What actually makes an MCP App work is a tool declaring a UI resource, that resource rendering in a sandboxed iframe, and two kinds of tool calls, one pushed by the host when the model calls the tool, and one the app can trigger itself. That's the whole mental model. Next episode, we'll tour some of the official example servers to see this pattern applied to real use cases.",
+      "audioFile": "audio/Episode04/slide-07.wav",
+      "durationInFrames": 862
+    }
+  ]
+}

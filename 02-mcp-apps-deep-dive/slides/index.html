@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MCP Apps Deep Dive — Episode 02</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css">
+<style>
+  :root { --accent: #d97757; }
+  .reveal h1, .reveal h2 { color: var(--accent); overflow-wrap: break-word; }
+  .reveal h1 { font-size: 1.8em; }
+  .reveal h2 { font-size: 1.4em; }
+  .reveal .slides { text-align: left; }
+  .reveal .slides section { width: 92%; margin: 0 auto; }
+  .reveal .slides section > p,
+  .reveal .slides section > ul,
+  .reveal .slides section > ol,
+  .reveal .slides section > table,
+  .reveal .slides section > dl {
+    max-width: 1040px; margin-left: auto; margin-right: auto;
+  }
+  .reveal p, .reveal li { overflow-wrap: break-word; }
+  .reveal h1, .reveal h2, .reveal .center-title { text-align: center; }
+  .reveal .small { font-size: 0.55em; }
+  .reveal code { color: #ffd7c2; }
+  .reveal ul li { margin-bottom: 0.3em; }
+  .reveal ul.compact { font-size: 0.68em; }
+  .reveal ul.compact li { margin-bottom: 0.15em; }
+  .reveal .mermaid { text-align: center; }
+  .reveal .mermaid svg { max-height: 460px; width: auto; height: auto; }
+  .reveal .slides section .mermaid { margin-bottom: 0.2em; }
+  .tag {
+    display: inline-block; padding: 2px 10px; border-radius: 12px;
+    background: var(--accent); color: #1a1a1a; font-size: 0.4em;
+    vertical-align: middle; margin-left: 10px;
+  }
+  .diagram-row { display: flex; justify-content: center; gap: 60px; margin-top: 25px; }
+  .diagram-col { display: flex; flex-direction: column; align-items: center; width: 380px; }
+  .diagram-col .box {
+    border: 1px solid #ccc; border-radius: 4px; background: #1f2020;
+    color: #eee; padding: 16px; font-size: 18px; text-align: center; width: 100%;
+    box-sizing: border-box;
+  }
+  .diagram-col .label { margin-top: 10px; font-size: 15px; color: #999; text-align: center; }
+  .steps { counter-reset: step; list-style: none; padding: 0; margin-top: 20px; }
+  .steps li {
+    counter-increment: step; position: relative; padding: 8px 0 8px 44px;
+    font-size: 0.75em; margin-bottom: 6px;
+  }
+  .steps li::before {
+    content: counter(step); position: absolute; left: 0; top: 4px;
+    width: 28px; height: 28px; border-radius: 50%; background: var(--accent);
+    color: #1a1a1a; font-weight: bold; display: flex; align-items: center;
+    justify-content: center; font-size: 0.9em;
+  }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px auto 0; max-width: 900px; }
+  .grid2 .card {
+    min-width: 0; box-sizing: border-box;
+    border: 1px solid #444; border-radius: 6px; padding: 12px 16px;
+    background: #1a1a1a; font-size: 0.6em;
+  }
+  .grid2 .card h3 { color: var(--accent); margin: 0 0 6px 0; font-size: 1.05em; }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+  <section>
+    <h1 class="center-title">MCP Apps Deep Dive</h1>
+    <p class="center-title">Protocol, lifecycle, and the security model</p>
+    <p class="center-title small">Episode 02 — mcp-apps-series</p>
+    <aside class="notes">
+      Now the part most people skip past: how MCP Apps actually works under
+      the hood. The protocol messages, the exact lifecycle from tool call to
+      rendered UI, and the security model that makes it safe for a host to
+      render code from a server it doesn't fully trust.
+    </aside>
+  </section>
+
+  <section>
+    <h2>The core pattern: two primitives combined</h2>
+    <div class="diagram-row">
+      <div class="diagram-col">
+        <div class="box">A tool</div>
+        <div class="label">Its description includes <code>_meta.ui.resourceUri</code>, pointing at a <code>ui://</code> resource</div>
+      </div>
+      <div class="diagram-col">
+        <div class="box">A UI resource</div>
+        <div class="label">An HTML page, usually bundled with its own JS and CSS</div>
+      </div>
+    </div>
+    <aside class="notes">
+      Everything comes down to two existing MCP primitives combined in a new
+      way. A tool whose description includes a meta dot ui dot resourceUri
+      field, pointing at a ui colon slash slash resource. And that resource
+      is an HTML page — usually bundled with its own JavaScript and CSS —
+      that the host renders in place of plain text output.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Lifecycle, step by step</h2>
+    <ol class="steps">
+      <li><strong>UI preloading</strong> — the host can prefetch the resource before the tool is even called.</li>
+      <li><strong>Resource fetch</strong> — host fetches the HTML bundle from the server.</li>
+      <li><strong>Sandboxed rendering</strong> — rendered inside a sandboxed iframe in the conversation.</li>
+      <li><strong>Bidirectional communication</strong> — app and host talk over JSON-RPC on postMessage.</li>
+    </ol>
+    <aside class="notes">
+      Four steps. First, UI preloading — because the tool description already
+      names the resource, the host can prefetch it before the tool is even
+      called. Second, resource fetch — the host pulls the HTML bundle from
+      the server. Third, sandboxed rendering — that HTML goes into a
+      sandboxed iframe right in the conversation. And fourth, bidirectional
+      communication — the app and the host talk over a JSON-RPC dialect of
+      MCP carried on postMessage.
+    </aside>
+  </section>
+
+  <section>
+    <h2>The full sequence</h2>
+    <div class="mermaid">
+sequenceDiagram
+    participant User
+    participant Agent
+    participant App
+    participant Server
+
+    User->>Agent: show me analytics
+    Agent->>Server: tools/call
+    Server-->>Agent: tool result
+    Agent-->>App: result pushed
+    User->>App: user interacts
+    App->>Agent: tools/call
+    Agent->>Server: forwarded
+    Server-->>Agent: fresh data
+    Agent-->>App: fresh data
+    </div>
+    <aside class="notes">
+      Here's the general shape, independent of any one example. The user
+      asks something, the agent calls a tool, the server responds, and the
+      agent pushes that result into the app. Then when the user interacts
+      with the app itself, the app can send its own tools call request back
+      through the agent, which forwards it to the server, gets fresh data,
+      and pushes it back. The app never talks to the server directly — the
+      agent, meaning the host, always sits in the middle.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Security model</h2>
+    <div class="grid2">
+      <div class="card">
+        <h3>Iframe sandbox</h3>
+        Can't touch the parent DOM, cookies, local storage, or navigate the parent page.
+      </div>
+      <div class="card">
+        <h3>postMessage only</h3>
+        All communication goes through a channel the host fully controls.
+      </div>
+      <div class="card">
+        <h3>Pre-declared templates</h3>
+        The UI is named ahead of time, so hosts can review, cache, and audit it before anything runs.
+      </div>
+      <div class="card">
+        <h3>Auditable messaging</h3>
+        Every UI-initiated action goes through the same consent path as a direct tool call.
+      </div>
+    </div>
+    <aside class="notes">
+      The security model has four pillars. Iframe sandboxing — the app can't
+      touch the parent page, read cookies, or navigate away. postMessage as
+      the only channel — the host controls what capabilities the app can
+      reach. Pre-declared templates — because the UI resource is named ahead
+      of time in the tool description, hosts can review and cache it before
+      anything executes. And auditable messaging — every action the UI
+      initiates rides the same consent and audit path as a direct tool call.
+      No special back door.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Framework support</h2>
+    <p>No required framework — it's standard web primitives: HTML, JS, CSS,
+       and postMessage. Two paths depending on which side you're building:</p>
+    <ul class="compact">
+      <li><strong>Building a host?</strong> Use <code>@mcp-ui/client</code>, or the official <strong>App Bridge</strong> module for iframe rendering, message passing, and policy enforcement.</li>
+      <li><strong>Building a server/app?</strong> <code>@modelcontextprotocol/ext-apps</code> provides a convenience <code>App</code> class — not mandatory, just a wrapper.</li>
+      <li>Starter templates exist for React, Vue, Svelte, Preact, Solid, and vanilla JS.</li>
+    </ul>
+    <aside class="notes">
+      No framework is required — under the hood it's just HTML, JavaScript,
+      CSS, and postMessage. If you're building a host, the ext-apps SDK
+      includes an App Bridge module that handles iframe rendering and message
+      passing for you, or there's the community mcp-ui client package. If
+      you're building a server or app, there's a convenience App class, but
+      it's a wrapper, not a requirement — you can implement the raw protocol
+      yourself. Next episode: what Claude Desktop specifically supports.
+    </aside>
+  </section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, theme: "dark" });
+
+  const deck = new Reveal({
+    plugins: [ RevealNotes ],
+    hash: true,
+    width: 1280,
+    height: 720,
+  });
+
+  // Reveal sets display:none on every slide except the current one, and
+  // Mermaid mis-measures (and permanently marks as "processed") any diagram
+  // it renders while hidden. So only ever render the diagram(s) on the
+  // slide that is actually visible right now, at the moment it becomes visible.
+  function renderVisibleDiagrams() {
+    mermaid.run({ querySelector: ".present .mermaid" });
+  }
+
+  deck.initialize()
+    .then(() => document.fonts.ready)
+    .then(renderVisibleDiagrams);
+  deck.on("slidechanged", renderVisibleDiagrams);
+</script>
+</body>
+</html>

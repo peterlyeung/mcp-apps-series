@@ -1,0 +1,84 @@
+{
+  "id": "Episode01",
+  "title": "MCP Recap & Why Apps",
+  "slides": [
+    {
+      "type": "title",
+      "title": "MCP Recap & Why Apps",
+      "subtitle": "The gap MCP Apps was built to close",
+      "eyebrow": "Episode 01 \u2014 mcp-apps-series",
+      "narration": "Before we get into MCP Apps specifically, a quick recap of MCP itself, and the actual problem that led to Apps getting added as an extension in the first place. If you already know MCP well, this is a fast one.",
+      "audioFile": "audio/Episode01/slide-01.wav",
+      "durationInFrames": 441
+    },
+    {
+      "type": "text",
+      "heading": "MCP, in one paragraph",
+      "paragraphs": [
+        "MCP is a JSON-RPC based protocol connecting an LLM host \u2014 Claude Desktop, an IDE, whatever \u2014 to external servers.",
+        "Servers expose three primitives: tools the model can call, resources the host can read, and prompts \u2014 reusable templates."
+      ],
+      "small": "Before MCP Apps: everything a tool returned was text, structured JSON, images, or links \u2014 rendered as plain conversational content.",
+      "narration": "MCP is a standard protocol for connecting an LLM host to external servers. Those servers expose three things: tools the model can call, resources the host can read, and prompts, reusable templates. Up until MCP Apps, whatever a tool returned was always rendered as plain conversational content, text, JSON, images, links. Nothing interactive.",
+      "audioFile": "audio/Episode01/slide-02.wav",
+      "durationInFrames": 721
+    },
+    {
+      "type": "bullets",
+      "heading": "The gap: text breaks down for...",
+      "items": [
+        "Exploring data \u2014 a wall of numbers vs. a map you click and drill into.",
+        "Configuring many options \u2014 ten back-and-forth questions vs. one form with defaults.",
+        "Rich media \u2014 a PDF or 3D model needs an actual viewer, not a description.",
+        "Real-time monitoring \u2014 a dashboard needs to update live, not on request.",
+        "Multi-step workflows \u2014 approvals and triage need navigation and persistent state."
+      ],
+      "narration": "Five situations where text-only responses genuinely break down. Exploring complex data, a wall of numbers versus an interactive map. Configuring lots of options, ten back and forth questions versus one form. Rich media like PDFs or 3D models that need an actual viewer. Real-time monitoring, where a dashboard needs to update on its own. And multi-step workflows like approvals, which need real navigation and state that persists across turns.",
+      "audioFile": "audio/Episode01/slide-03.wav",
+      "durationInFrames": 874
+    },
+    {
+      "type": "grid",
+      "heading": "Why not just send a link?",
+      "cards": [
+        {
+          "title": "Context preservation",
+          "body": "No tab switching \u2014 the UI lives right inside the conversation."
+        },
+        {
+          "title": "Bidirectional data flow",
+          "body": "The app can call any tool on the server; no separate API or auth stack."
+        },
+        {
+          "title": "Host delegation",
+          "body": "The app can ask the host to act \u2014 the host routes it through tools the user already connected."
+        },
+        {
+          "title": "Security by construction",
+          "body": "Runs in a sandboxed iframe \u2014 the host can safely render code it doesn't fully trust."
+        }
+      ],
+      "narration": "A reasonable question: why not just build a normal web app and send a link? Four reasons MCP Apps beats that. Context preservation, no tab switching, the UI is right there in the thread. Bidirectional data flow, the embedded app can call tools on the same server for free, reusing MCP's existing session, instead of standing up a separate API. Host delegation, the app can ask the host to take an action, and the host routes it through whatever the user has already connected. And security by construction, it runs in a sandboxed iframe, so the host can render it without fully trusting the server author.",
+      "audioFile": "audio/Episode01/slide-04.wav",
+      "durationInFrames": 1158
+    },
+    {
+      "type": "twoColumn",
+      "heading": "Who built it",
+      "columns": [
+        {
+          "title": "Anthropic + OpenAI co-developed the spec",
+          "caption": "Built on the community MCP-UI project"
+        },
+        {
+          "title": "SEP-1865, shipped 2026-01-26",
+          "caption": "First official MCP extension"
+        }
+      ],
+      "small": "Launch hosts: Claude (web + desktop), ChatGPT, VS Code Copilot, Goose. Launch partners include Figma, Canva, Slack, Salesforce, Asana, and more.",
+      "narration": "MCP Apps was co-developed by Anthropic and OpenAI, building on the community MCP-UI project, and shipped as SEP-1865, the first official MCP extension, on January 26th, 2026. Launch host support included Claude on web and desktop, ChatGPT, VS Code Copilot, and Goose, with launch partners like Figma, Canva, Slack, and Salesforce. Next episode, we go deep on exactly how the protocol works under the hood.",
+      "audioFile": "audio/Episode01/slide-05.wav",
+      "durationInFrames": 901
+    }
+  ]
+}

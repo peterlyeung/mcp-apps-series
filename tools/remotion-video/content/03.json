@@ -1,0 +1,76 @@
+{
+  "id": "Episode03",
+  "title": "Claude Desktop & MCP",
+  "slides": [
+    {
+      "type": "title",
+      "title": "Claude Desktop & MCP",
+      "subtitle": "Three related but distinct capabilities",
+      "eyebrow": "Episode 03 \u2014 mcp-apps-series",
+      "narration": "Claude Desktop has at least three MCP-adjacent capabilities that are easy to lump together but are actually separate layers. Getting this distinction right matters, because it's the part most likely to confuse people trying this out for the first time.",
+      "audioFile": "audio/Episode03/slide-01.wav",
+      "durationInFrames": 473
+    },
+    {
+      "type": "layers",
+      "heading": "Three layers",
+      "items": [
+        {
+          "title": "1. MCP servers \u2014 the base protocol",
+          "body": "Local (stdio) or remote \u2014 gives Claude tools, resources, and prompts from that server."
+        },
+        {
+          "title": "2. MCPB \u2014 desktop extensions",
+          "body": "How you install a local MCP server: a zip file, one-click setup."
+        },
+        {
+          "title": "3. MCP Apps \u2014 interactive UI rendering",
+          "body": "What happens after a tool call, if the tool declares a UI resource."
+        }
+      ],
+      "narration": "Layer one is the base protocol, connecting to an MCP server at all, local or remote, to get its tools, resources, and prompts. Layer two, MCPB, is specifically about installation, packaging a local server as a one-click extension. Layer three, MCP Apps, is about what happens after a tool call, whether the result renders as an interactive UI. These three are independent axes, not steps in a single pipeline.",
+      "audioFile": "audio/Episode03/slide-02.wav",
+      "durationInFrames": 806
+    },
+    {
+      "type": "bullets",
+      "heading": "MCPB \u2014 desktop extensions",
+      "items": [
+        "An .mcpb file = a zip archive with a local MCP server + a manifest.json",
+        "One-click install: double-click, drag in, or Settings \u2192 Extensions",
+        "Runs locally over stdio; bundles dependencies; works offline; no OAuth needed",
+        "Good fit for firewalled systems, local tools, piggybacking on existing SSO",
+        "Previously called \"DXT\" \u2014 renamed to MCPB"
+      ],
+      "narration": "MCPB, an m c p b file is a zip archive containing a local MCP server plus a manifest dot json. You install it with a double-click, by dragging it in, or through Settings, Extensions. It runs locally over stdio, bundles its own dependencies, works offline, and needs no OAuth. Good fit for internal tools behind a firewall, or anything that wants to piggyback on existing single sign-on. This used to be called D X T, and got renamed to MCPB.",
+      "audioFile": "audio/Episode03/slide-03.wav",
+      "durationInFrames": 882
+    },
+    {
+      "type": "text",
+      "heading": "MCP Apps support in Claude Desktop",
+      "bullets": [
+        "Claude \u2014 both claude.ai web and Claude Desktop \u2014 is a launch host for MCP Apps, since Jan 2026",
+        "Any connected tool that declares a ui:// resource renders as a sandboxed iframe, inline in chat",
+        "Works the same whether the server was installed via MCPB or connected remotely \u2014 install and render are orthogonal"
+      ],
+      "warn": "Known rough edge: there's at least one open GitHub issue about MCP Apps UI not always rendering in Claude Desktop / claude.ai. Bleeding edge \u2014 expect occasional bugs.",
+      "narration": "Claude, both the web app and Claude Desktop, is a launch host for MCP Apps. Any connected tool that declares a ui resource renders as a sandboxed iframe right inline in the chat, and this works identically whether the server was installed as an MCPB extension or connected remotely, install and render are genuinely orthogonal concerns. One honest caveat: this is bleeding edge, there's at least one open GitHub issue about rendering not always working, worth expecting occasional bugs at this stage.",
+      "audioFile": "audio/Episode03/slide-04.wav",
+      "durationInFrames": 938
+    },
+    {
+      "type": "steps",
+      "heading": "How to actually try this today",
+      "items": [
+        "Settings \u2192 Extensions in Claude Desktop",
+        "Browse extensions (Anthropic-reviewed) or install a custom .mcpb",
+        "Call a tool that declares an MCP Apps UI resource in a normal conversation",
+        "For remote servers, same rendering applies once connected \u2014 no MCPB needed"
+      ],
+      "narration": "If you want to try this yourself: open Settings, then Extensions, in Claude Desktop. Browse the Anthropic-reviewed directory, or install a custom m c p b file. Then just call a tool that declares an MCP Apps UI resource in a normal conversation, that's it, no extra steps. And for remote MCP servers, the exact same rendering applies once you've connected them, you don't need MCPB at all for that path. Next episode, we stop describing this and actually build one.",
+      "audioFile": "audio/Episode03/slide-05.wav",
+      "durationInFrames": 904
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "id": "Episode05",
+  "title": "Real-World Examples",
+  "slides": [
+    {
+      "type": "title",
+      "title": "Real-World Examples",
+      "subtitle": "A map of what's out there to explore next",
+      "eyebrow": "Episode 05 \u2014 mcp-apps-series",
+      "narration": "We built one MCP App from scratch in episode four, a small dice roller. This episode is about zooming back out: what does the official example gallery look like, and who's actually shipping this in production today. Consider this the map for where to go exploring on your own after the series wraps.",
+      "audioFile": "audio/Episode05/slide-01.wav",
+      "durationInFrames": 577
+    },
+    {
+      "type": "grid",
+      "heading": "The official example gallery",
+      "columns": 3,
+      "cards": [
+        {
+          "title": "3D & visualization",
+          "items": [
+            "map-server (CesiumJS globe)",
+            "threejs-server",
+            "shadertoy-server"
+          ]
+        },
+        {
+          "title": "Data exploration",
+          "items": [
+            "cohort-heatmap-server",
+            "customer-segmentation-server",
+            "wiki-explorer-server"
+          ]
+        },
+        {
+          "title": "Business apps",
+          "items": [
+            "scenario-modeler-server",
+            "budget-allocator-server"
+          ]
+        },
+        {
+          "title": "Media",
+          "items": [
+            "pdf-server",
+            "video-resource-server",
+            "sheet-music-server",
+            "say-server (text-to-speech)"
+          ]
+        },
+        {
+          "title": "Utilities",
+          "items": [
+            "qr-server",
+            "system-monitor-server",
+            "transcript-server"
+          ]
+        },
+        {
+          "title": "Starter templates",
+          "items": [
+            "React, Vue, Svelte",
+            "Preact, Solid",
+            "vanilla JavaScript"
+          ]
+        }
+      ],
+      "narration": "The official ext-apps repository ships a genuinely wide gallery of example servers. Three-D and visualization, a CesiumJS globe, Three dot js scenes, shader effects. Data exploration tools like cohort heatmaps and customer segmentation. Business apps, scenario modelers, budget allocators. Media, PDF viewers, video, sheet music, even text-to-speech. Utilities like QR codes and system monitors. And starter templates in every major framework if you want to build your own instead of starting from scratch like we did in episode four.",
+      "audioFile": "audio/Episode05/slide-02.wav",
+      "durationInFrames": 1022
+    },
+    {
+      "type": "partners",
+      "heading": "Who's shipping this in production",
+      "names": [
+        "Figma",
+        "Canva",
+        "Slack",
+        "Salesforce",
+        "Asana",
+        "Box",
+        "monday.com",
+        "Clay",
+        "Hex",
+        "Amplitude"
+      ],
+      "small": "Launch partners named in the January 2026 MCP Apps announcement.",
+      "narration": "These aren't just demos, real companies were named as launch partners when MCP Apps was announced: Figma, Canva, Slack, Salesforce, Asana, Box, monday dot com, Clay, Hex, and Amplitude. Worth checking which of these have public MCP Apps integrations live by the time you're watching this, since this space is moving fast.",
+      "audioFile": "audio/Episode05/slide-03.wav",
+      "durationInFrames": 652
+    },
+    {
+      "type": "roadmap",
+      "heading": "Series recap",
+      "items": [
+        {
+          "num": "01",
+          "text": "MCP recap \u2014 why \"Apps\" got added at all"
+        },
+        {
+          "num": "02",
+          "text": "The protocol \u2014 lifecycle and security model"
+        },
+        {
+          "num": "03",
+          "text": "Claude Desktop's three distinct layers of support"
+        },
+        {
+          "num": "04",
+          "text": "A real MCP App, built from scratch"
+        },
+        {
+          "num": "05",
+          "text": "This episode \u2014 the wider ecosystem"
+        }
+      ],
+      "small": "Full write-up + working code: github.com/peterlyeung/mcp-apps-series",
+      "narration": "That closes out the series. We went from a plain MCP recap, through the actual protocol and its security model, to what Claude Desktop specifically supports, to building a real working MCP App from scratch, and finally this tour of the wider ecosystem. Everything, notes, slides, and the working dice server, is in the repo if you want to build on any of it yourself.",
+      "audioFile": "audio/Episode05/slide-04.wav",
+      "durationInFrames": 693
+    }
+  ]
+}
